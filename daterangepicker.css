@@ -332,7 +332,8 @@
   left: 0% !important;
   overflow: scroll;
   margin: 0; 
-  z-index:1000;   
+  z-index:1000;
+  padding-bottom: 46px;   
 }
 
 .daterangepicker.expanded:before, .daterangepicker.expanded:after {
@@ -344,6 +345,16 @@
   width: 100%;
   padding:8px;
 }
+
+.daterangepicker.expanded .drp-buttons {
+  position: fixed;
+  bottom:0;
+  left:0;
+  width:100%;
+  background: #fff;
+}
+
+/* RTSsoft tweaks */
 
 /*  Larger Screen Styling */
 @media (min-width: 564px) {
