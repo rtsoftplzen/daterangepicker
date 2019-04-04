@@ -450,6 +450,46 @@
 
         constructor: DateRangePicker,
 
+        /* RTSsoft tweaks */
+
+        placeInView: function(widthTreshold){
+
+            let opens = null;
+            const wrapper = this.container[0];
+
+            if (window.innerWidth > widthTreshold) {
+
+                if (!this.singleDatePicker && wrapper.clientWidth < 668) {
+
+                    wrapper.style.width = '668px';
+                    
+                    const wrapperBounds = wrapper.getBoundingClientRect();
+
+                    if (wrapperBounds.right > window.innerWidth) {
+                        opens = 'left';
+                        // $(wrapper).css('marginLeft', -(wrapperBounds.right - window.innerWidth + 20) + 'px');
+                    } else {
+                        opens = 'right';
+                    }
+
+                }
+
+                $(wrapper).removeClass('expanded');
+
+            } else {
+                $(wrapper).addClass('expanded');
+            }        
+
+            if (opens) {
+                $(wrapper).removeClass('openscenter opensleft opensright');
+                $(wrapper).addClass('opens' + opens);
+                this.opens = opens;
+                this.updateView();
+            }
+        },
+
+        /* RTSsoft tweaks */
+
         setStartDate: function(startDate) {
             if (typeof startDate === 'string')
                 this.startDate = moment(startDate, this.locale.format);
