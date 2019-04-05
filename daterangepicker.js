@@ -33,6 +33,7 @@
 
         //default settings for options
         this.parentEl = 'body';
+        this.widthTreshold = 800;
         this.element = $(element);
         this.startDate = moment().startOf('day');
         this.endDate = moment().endOf('day');
@@ -450,32 +451,22 @@
 
         constructor: DateRangePicker,
 
-        /* RTSsoft tweaks */
+        placeInView: function(){
 
-        placeInView: function(widthTreshold){
+            var opens = null;
+            var wrapper = this.container[0];
 
-            let opens = null;
-            const wrapper = this.container[0];
-
-            if (window.innerWidth > widthTreshold) {
-
+            if (window.innerWidth > this.widthTreshold) {
                 if (!this.singleDatePicker && wrapper.clientWidth < 668) {
-
                     wrapper.style.width = '668px';
-                    
                     const wrapperBounds = wrapper.getBoundingClientRect();
-
-                    if (wrapperBounds.right > window.innerWidth) {
+                    if (wrapperBounds.right >= (window.innerWidth - 20)) {
                         opens = 'left';
-                        // $(wrapper).css('marginLeft', -(wrapperBounds.right - window.innerWidth + 20) + 'px');
                     } else {
                         opens = 'right';
                     }
-
-                }
-
+                }           
                 $(wrapper).removeClass('expanded');
-
             } else {
                 $(wrapper).addClass('expanded');
             }        
@@ -487,8 +478,6 @@
                 this.updateView();
             }
         },
-
-        /* RTSsoft tweaks */
 
         setStartDate: function(startDate) {
             if (typeof startDate === 'string')
