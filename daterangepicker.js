@@ -451,6 +451,16 @@
 
         constructor: DateRangePicker,
 
+        getPositionByLayout: function() {
+            const wrapper = this.container[0];
+            const wrapperBounds = wrapper.getBoundingClientRect();
+            if (wrapperBounds.right >= (window.innerWidth - 20)) {
+                return 'left';
+            } else {
+                return 'right';
+            }   
+        },
+  
         placeInView: function(){
 
             var opens = null;
@@ -459,13 +469,8 @@
             if (window.innerWidth > this.widthTreshold) {
                 if (!this.singleDatePicker && wrapper.clientWidth < 668) {
                     wrapper.style.width = '668px';
-                    const wrapperBounds = wrapper.getBoundingClientRect();
-                    if (wrapperBounds.right >= (window.innerWidth - 20)) {
-                        opens = 'left';
-                    } else {
-                        opens = 'right';
-                    }
-                }           
+                }
+                opens = this.getPositionByLayout();  
                 $(wrapper).removeClass('expanded');
             } else {
                 $(wrapper).addClass('expanded');
