@@ -451,26 +451,38 @@
 
         constructor: DateRangePicker,
 
-        getPositionByLayout: function() {
+        getHorizontalPositionByLayout: function() {
+                const wrapper = this.container[0];
+                const wrapperBounds = wrapper.getBoundingClientRect();
+                if (wrapperBounds.right >= (window.innerWidth - 20)) {
+                    return 'left';
+                } else {
+                    return 'right';
+                }   
+            },
+
+        getVerticalPositionByLayout: function() {
             const wrapper = this.container[0];
             const wrapperBounds = wrapper.getBoundingClientRect();
-            if (wrapperBounds.right >= (window.innerWidth - 20)) {
-                return 'left';
+            if (wrapperBounds.bottom >= (window.innerHeight - 20)) {
+                return 'up';
             } else {
-                return 'right';
-            }   
+                return 'down';
+            }    
         },
   
         placeInView: function(){
 
             var opens = null;
+            var drops = null;
             var wrapper = this.container[0];
 
             if (window.innerWidth > this.widthTreshold) {
                 if (!this.singleDatePicker && wrapper.clientWidth < 668) {
                     wrapper.style.width = '668px';
                 }
-                opens = this.getPositionByLayout();  
+                opens = this.getHorizontalPositionByLayout();  
+                drops = this.getVerticalPositionByLayout();
                 $(wrapper).removeClass('expanded');
             } else {
                 $(wrapper).addClass('expanded');
@@ -480,6 +492,13 @@
                 $(wrapper).removeClass('openscenter opensleft opensright');
                 $(wrapper).addClass('opens' + opens);
                 this.opens = opens;
+            }
+
+            if (drops) {
+                this.drops = drops;
+            }
+
+            if (opens || drops) {
                 this.updateView();
             }
         },
