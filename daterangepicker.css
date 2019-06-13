@@ -357,15 +357,13 @@
 /* RTSsoft tweaks */
 
 /*  Larger Screen Styling */
-@media (min-width: 564px) {
+@media (min-width: 800px) {
   .daterangepicker {
     width: auto; }
     .daterangepicker .ranges ul {
       width: 140px; }
     .daterangepicker.single .ranges ul {
       width: 100%; }
-    .daterangepicker.single .drp-calendar.left {
-      clear: none; }
     .daterangepicker.single.ltr .ranges, .daterangepicker.single.ltr .drp-calendar {
       float: left; }
     .daterangepicker.single.rtl .ranges, .daterangepicker.single.rtl .drp-calendar {
@@ -374,7 +372,6 @@
       direction: ltr;
       text-align: left; }
       .daterangepicker.ltr .drp-calendar.left {
-        clear: left;
         margin-right: 0; }
         .daterangepicker.ltr .drp-calendar.left .calendar-table {
           border-right: none;
@@ -394,7 +391,6 @@
       direction: rtl;
       text-align: right; }
       .daterangepicker.rtl .drp-calendar.left {
-        clear: right;
         margin-left: 0; }
         .daterangepicker.rtl .drp-calendar.left .calendar-table {
           border-left: none;
@@ -411,12 +407,3 @@
       .daterangepicker.rtl .ranges, .daterangepicker.rtl .drp-calendar {
         text-align: right;
         float: right; } }
-@media (min-width: 730px) {
-  .daterangepicker .ranges {
-    width: auto; }
-  .daterangepicker.ltr .ranges {
-    float: left; }
-  .daterangepicker.rtl .ranges {
-    float: right; }
-  .daterangepicker .drp-calendar.left {
-    clear: none !important; } }
