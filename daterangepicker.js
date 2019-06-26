@@ -37,6 +37,8 @@
         this.element = $(element);
         this.startDate = moment().startOf('day');
         this.endDate = moment().endOf('day');
+        this.infinityStart = moment().subtract(100, 'years').startOf('day');
+        this.infinityEnd = moment().add(100, 'years').endOf('day');
         this.minDate = false;
         this.maxDate = false;
         this.maxSpan = false;
@@ -68,12 +70,15 @@
         this.buttonClasses = 'btn btn-sm';
         this.applyButtonClasses = 'btn-primary';
         this.cancelButtonClasses = 'btn-default';
+        this.infinityButtonClasses = 'btn-primary';
 
         this.locale = {
             direction: 'ltr',
             format: moment.localeData().longDateFormat('L'),
             separator: ' - ',
             applyLabel: 'Apply',
+            infinityStart: ' ... ',
+            infinityEnd: ' ... ',
             cancelLabel: 'Cancel',
             weekLabel: 'W',
             customRangeLabel: 'Custom Range',
@@ -110,11 +115,15 @@
                     '<div class="calendar-table"></div>' +
                     '<div class="calendar-time"></div>' +
                 '</div>' +
+                '<div class="drp-infinity-options">' + 
+                    '<button class="drp-infinity-to-selected"></button>' + 
+                    '<button class="drp-selected-to-infinity"></button>' + 
+                '</div>' +
                 '<div class="drp-buttons">' +
                     '<span class="drp-selected"></span>' +
                     '<button class="cancelBtn" type="button"></button>' +
                     '<button class="applyBtn" disabled="disabled" type="button"></button> ' +
-                '</div>' +
+                '</div>'
             '</div>';
 
         this.parentEl = (options.parentEl && $(options.parentEl).length) ? $(options.parentEl) : $(this.parentEl);
@@ -128,6 +137,12 @@
 
             if (typeof options.locale.direction === 'string')
                 this.locale.direction = options.locale.direction;
+
+            if (typeof options.locale.infinityStart === 'string')
+                this.locale.infinityStart = options.locale.infinityStart;
+
+            if (typeof options.locale.infinityEnd === 'string')
+                this.locale.infinityEnd = options.locale.infinityEnd;
 
             if (typeof options.locale.format === 'string')
                 this.locale.format = options.locale.format;
@@ -166,8 +181,14 @@
         if (typeof options.startDate === 'string')
             this.startDate = moment(options.startDate, this.locale.format);
 
+        if (typeof options.infinityStart === 'string')
+            this.infinityStart = moment(options.infinityStart, this.locale.format);
+
         if (typeof options.endDate === 'string')
             this.endDate = moment(options.endDate, this.locale.format);
+
+        if (typeof options.infinityEnd === 'string')
+            this.infinityEnd = moment(options.infinityEnd, this.locale.format);
 
         if (typeof options.minDate === 'string')
             this.minDate = moment(options.minDate, this.locale.format);
@@ -194,6 +215,9 @@
         // sanity check for bad options
         if (this.maxDate && this.endDate.isAfter(this.maxDate))
             this.endDate = this.maxDate.clone();
+
+        if (typeof options.infinityButtonClasses === 'string')
+            this.infinityButtonClasses = options.infinityButtonClasses;
 
         if (typeof options.applyButtonClasses === 'string')
             this.applyButtonClasses = options.applyButtonClasses;
@@ -399,9 +423,11 @@
         this.container.addClass('opens' + this.opens);
 
         //apply CSS classes and labels to buttons
-        this.container.find('.applyBtn, .cancelBtn').addClass(this.buttonClasses);
+        this.container.find('.applyBtn, .cancelBtn, .drp-infinity-to-selected, .drp-selected-to-infinity').addClass(this.buttonClasses);
         if (this.applyButtonClasses.length)
             this.container.find('.applyBtn').addClass(this.applyButtonClasses);
+        if (this.infinityButtonClasses.length)
+            this.container.find('.drp-infinity-to-selected, .drp-selected-to-infinity').addClass(this.infinityButtonClasses);
         if (this.cancelButtonClasses.length)
             this.container.find('.cancelBtn').addClass(this.cancelButtonClasses);
         this.container.find('.applyBtn').html(this.locale.applyLabel);
@@ -416,6 +442,7 @@
             .on('click.daterangepicker', '.next', $.proxy(this.clickNext, this))
             .on('mousedown.daterangepicker', 'td.available', $.proxy(this.clickDate, this))
             .on('mouseenter.daterangepicker', 'td.available', $.proxy(this.hoverDate, this))
+            .on('mouseleave.daterangepicker', 'td.available', $.proxy(this.unHoverDate, this))
             .on('change.daterangepicker', 'select.yearselect', $.proxy(this.monthOrYearChanged, this))
             .on('change.daterangepicker', 'select.monthselect', $.proxy(this.monthOrYearChanged, this))
             .on('change.daterangepicker', 'select.hourselect,select.minuteselect,select.secondselect,select.ampmselect', $.proxy(this.timeChanged, this))
@@ -426,6 +453,10 @@
         this.container.find('.drp-buttons')
             .on('click.daterangepicker', 'button.applyBtn', $.proxy(this.clickApply, this))
             .on('click.daterangepicker', 'button.cancelBtn', $.proxy(this.clickCancel, this))
+
+        this.container.find('.drp-infinity-options')
+            .on('click.daterangepicker', 'button.drp-infinity-to-selected', $.proxy(this.clickInfinityToSelected, this))
+            .on('click.daterangepicker', 'button.drp-selected-to-infinity', $.proxy(this.clickSelectedToInfinity, this))
 
         if (this.element.is('input') || this.element.is('button')) {
             this.element.on({
@@ -456,9 +487,7 @@
                 const wrapperBounds = wrapper.getBoundingClientRect();
                 if (wrapperBounds.right >= (window.innerWidth - 20)) {
                     return 'left';
-                } else {
-                    return 'right';
-                }   
+                }  
             },
 
         getVerticalPositionByLayout: function() {
@@ -478,9 +507,6 @@
             var wrapper = this.container[0];
 
             if (window.innerWidth > this.widthTreshold) {
-                if (!this.singleDatePicker && wrapper.clientWidth < 668) {
-                    wrapper.style.width = '668px';
-                }
                 opens = this.getHorizontalPositionByLayout();  
                 drops = this.getVerticalPositionByLayout();
                 $(wrapper).removeClass('expanded');
@@ -499,7 +525,7 @@
             }
 
             if (opens || drops) {
-                this.updateView();
+                this.move();
             }
         },
 
@@ -1157,6 +1183,11 @@
         },
 
         hide: function(e) {
+
+            this.container.removeClass('outOfCalendar');
+            this.container.find('.drp-infinity-options').removeClass('visible');
+            this.container.find('.drp-infinity-options button').removeClass('visible');
+
             if (!this.isShowing) return;
 
             //incomplete date selection, revert to last values
@@ -1258,7 +1289,15 @@
             this.updateCalendars();
         },
 
+        unHoverDate: function(e) {
+            if (!this.endDate) {
+                this.container.addClass('outOfCalendar');
+            }
+        },
+
         hoverDate: function(e) {
+
+            this.container.removeClass('outOfCalendar');
 
             //ignore dates that can't be selected
             if (!$(e.target).hasClass('available')) return;
@@ -1356,6 +1395,9 @@
                 }
             }
 
+            //refresh infinity buttons
+            this.regenerateInfiniteButtons();
+
             if (this.singleDatePicker) {
                 this.setEndDate(this.startDate);
                 if (!this.timePicker)
@@ -1367,6 +1409,28 @@
             //This is to cancel the blur event handler if the mouse was in one of the inputs
             e.stopPropagation();
 
+        },
+
+        regenerateInfiniteButtons: function () {
+
+            // picked only one date (startData) -> show "infinite" buttons
+            if(!this.singleDatePicker && this.startDate && !this.endDate){
+                this.container.find('.drp-infinity-options').addClass('visible');
+                if(this.startDate.isSame(this.infinityStart)) {
+                    this.container.find('.drp-infinity-to-selected').removeClass('visible').html('');
+                } else {
+                    this.container.find('.drp-infinity-to-selected').addClass('visible').html(this.locale.infinityStart + this.locale.separator + this.startDate.format(this.locale.format));
+                }
+                if(this.startDate.isSame(this.infinityStart) || this.startDate.isSame(this.infinityEnd)) {
+                    this.container.find('.drp-selected-to-infinity').removeClass('visible').html('');
+                } else {
+                    this.container.find('.drp-selected-to-infinity').addClass('visible').html(this.startDate.format(this.locale.format) + this.locale.separator + this.locale.infinityEnd);
+                }
+            } else {
+                this.container.find('.drp-infinity-options').removeClass('visible');
+                this.container.find('.drp-infinity-to-selected').removeClass('visible').html('');
+                this.container.find('.drp-selected-to-infinity').removeClass('visible').html('');   
+            }
         },
 
         calculateChosenLabel: function () {
@@ -1404,6 +1468,19 @@
         clickApply: function(e) {
             this.hide();
             this.element.trigger('apply.daterangepicker', this);
+        },
+
+        clickInfinityToSelected: function() {
+            this.endDate = this.startDate.clone();
+            this.startDate = this.infinityStart;
+            this.hide();
+            this.element.trigger('apply.daterangepicker', this);    
+        },
+        
+        clickSelectedToInfinity: function() {
+            this.endDate = this.infinityEnd;
+            this.hide();
+            this.element.trigger('apply.daterangepicker', this);    
         },
 
         clickCancel: function(e) {
@@ -1501,6 +1578,9 @@
             this.renderTimePicker('left');
             this.renderTimePicker('right');
 
+            //refresh infinite buttons
+            this.regenerateInfiniteButtons();
+
         },
 
         elementChanged: function() {
@@ -1545,9 +1625,11 @@
 
         updateElement: function() {
             if (this.element.is('input') && this.autoUpdateInput) {
-                var newValue = this.startDate.format(this.locale.format);
+                // var newValue = this.startDate.format(this.locale.format);
+                var newValue = this.startDate.isSame(this.infinityStart) ? '...' : this.startDate.format(this.locale.format);
                 if (!this.singleDatePicker) {
-                    newValue += this.locale.separator + this.endDate.format(this.locale.format);
+                    // newValue += this.locale.separator + this.endDate.format(this.locale.format);
+                    newValue += this.locale.separator + (this.endDate.isSame(this.infinityEnd) ? '...' : this.endDate.format(this.locale.format));
                 }
                 if (newValue !== this.element.val()) {
                     this.element.val(newValue).trigger('change');
