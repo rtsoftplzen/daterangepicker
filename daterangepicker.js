@@ -84,7 +84,9 @@
             customRangeLabel: 'Custom Range',
             daysOfWeek: moment.weekdaysMin(),
             monthNames: moment.monthsShort(),
-            firstDay: moment.localeData().firstDayOfWeek()
+            firstDay: moment.localeData().firstDayOfWeek(),
+            infinityStartTooltip: 'Vše do vybraného data',
+            infinityEndTooltip: 'Vše od vybraného data',
         };
 
         this.callback = function() { };
@@ -116,8 +118,8 @@
                     '<div class="calendar-time"></div>' +
                 '</div>' +
                 '<div class="drp-infinity-options">' + 
-                    '<button class="drp-infinity-to-selected"></button>' + 
-                    '<button class="drp-selected-to-infinity"></button>' + 
+                    '<button class="drp-infinity-to-selected" title="'+ this.locale.infinityStartTooltip +'"></button>' + 
+                    '<button class="drp-selected-to-infinity" title="'+ this.locale.infinityEndTooltip +'"></button>' + 
                 '</div>' +
                 '<div class="drp-buttons">' +
                     '<span class="drp-selected"></span>' +
@@ -143,6 +145,12 @@
 
             if (typeof options.locale.infinityEnd === 'string')
                 this.locale.infinityEnd = options.locale.infinityEnd;
+
+            if (typeof options.locale.infinityStartTooltip === 'string')
+                this.locale.infinityStartTooltip = options.locale.infinityStartTooltip;
+
+            if (typeof options.locale.infinityEndTooltip === 'string')
+                this.locale.infinityEndTooltip = options.locale.infinityEndTooltip;
 
             if (typeof options.locale.format === 'string')
                 this.locale.format = options.locale.format;
@@ -487,6 +495,10 @@
                 const wrapperBounds = wrapper.getBoundingClientRect();
                 if (wrapperBounds.right >= (window.innerWidth - 20)) {
                     return 'left';
+                }  
+
+                if (wrapperBounds.left <= 20) {
+                    return 'right';
                 }  
             },
 
@@ -1127,8 +1139,7 @@
             } else if (this.opens == 'center') {
                 this.container.css({
                     top: containerTop,
-                    left: this.element.offset().left - parentOffset.left + this.element.outerWidth() / 2
-                            - this.container.outerWidth() / 2,
+                    left: this.element.offset().left - parentOffset.left + this.element.outerWidth() / 2 - this.container.outerWidth() / 2,
                     right: 'auto'
                 });
                 if (this.container.offset().left < 0) {
