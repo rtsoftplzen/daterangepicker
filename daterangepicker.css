@@ -358,6 +358,7 @@
 
 .daterangepicker.expanded .drp-buttons {
   position: fixed;
+  display:block;
   bottom:0;
   left:0;
   width:100%;
